@@ -1,4 +1,6 @@
 const express = require('express');
+const cors = require('cors');
+
 const userRoutes = require('./routes/userRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 require('./schemas')
@@ -10,13 +12,18 @@ const {
 require('dotenv').config();
 
 const app = express();
+app.use(cors({
+  origin: 'http://localhost:3001',
+}));
+
 app.use(express.json());
 
-app.use(notFoundHandler);
-app.use(errorHandler);
 
 app.use('/users', userRoutes);
 app.use('/tasks', taskRoutes);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 

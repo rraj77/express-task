@@ -1,14 +1,28 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { createUser, findUserByUsername } = require('../models/userModel');
+const {
+  createUser,
+  findUserByUsername,
+  getUsers,
+} = require('../models/userModel');
 
 const register = async (req, res) => {
-  const { username, password } = req.body;
+  const { firstName, lastName, username, password } = req.body;
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await createUser(username, hashedPassword);
+  try {
+    const user = await createUser(
+      firstName,
+      lastName,
+      username,
+      hashedPassword
+    );
 
-  res.status(201).json({ id: user.id, username: user.username });
+    const { password, ...rest } = user;
+    res.status(201).json(rest);
+  } catch (error) {
+    res.status(409).send({ message: error.message });
+  }
 };
 
 const login = async (req, res) => {
@@ -20,10 +34,16 @@ const login = async (req, res) => {
   }
 
   const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
+    expiresIn: '24h',
   });
-
-  res.json({ token });
+  const { password: pass, ...rest } = user;
+  res.json({ ...rest, token });
 };
 
-module.exports = { register, login };
+const getAllUsers = async (req, res) => {
+  const users = await getUsers();
+
+  res.json(users);
+};
+
+module.exports = { register, login, getAllUsers };
