@@ -1,9 +1,9 @@
 const pool = require('../config/db');
 
-const createUser = async (firstName, lastName, username, hashedPassword) => {
+const createUser = async (firstName, lastName, username, hashedPassword, roleId) => {
   const result = await pool.query(
-    'INSERT INTO users (firstName, lastName, username, password) VALUES ($1, $2, $3, $4) RETURNING *',
-    [firstName, lastName, username, hashedPassword]
+    'INSERT INTO users (firstName, lastName, username, password, "roleId") VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [firstName, lastName, username, hashedPassword, roleId]
   );
 
   return result.rows[0];
@@ -76,4 +76,23 @@ const getUsers = async () => {
   return data;
 };
 
-module.exports = { createUser, findUserByUsername, getUsers };
+const getUser = async (id) => {
+  const result = await pool.query(
+    `
+  SELECT 
+    u.id,
+    u.username,
+    u.firstName,
+    u.lastName,
+    json_build_object('id', r.id, 'name', r.name) AS role
+  FROM users u
+  LEFT JOIN roles r ON u."roleId" = r.id
+  WHERE u.id = $1;
+  `,
+    [id]
+  );
+
+  return result.rows[0];
+};
+
+module.exports = { createUser, findUserByUsername, getUsers, getUser };

@@ -1,4 +1,5 @@
 const pool = require('./config/db');
+const bcrypt = require('bcrypt');
 
 const createUsersTable = async () => {
   const createTableQuery = `
@@ -14,14 +15,24 @@ const createUsersTable = async () => {
 
   const insertDefaultUserQuery = `
       INSERT INTO users (firstName, lastName, username, password, "roleId")
-      VALUES ('Admin', 'User', 'admin', 'hashedpassword123', 1)
+      VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT (username) DO NOTHING;
     `;
 
   try {
     await pool.query(createTableQuery);
+
     await createRolesTable();
-    await pool.query(insertDefaultUserQuery);
+
+    const hashedPassword = await bcrypt.hash('12345678', 10);
+
+    await pool.query(insertDefaultUserQuery, [
+      'Admin',
+      'abc',
+      'admin@gmail.com',
+      hashedPassword,
+      1,
+    ]);
 
     await createTasksTable();
   } catch (err) {
@@ -56,7 +67,7 @@ const createRolesTable = async () => {
 
   const insertRolesQuery = `
     INSERT INTO roles (name) 
-    SELECT * FROM UNNEST(ARRAY['admin', 'user']) 
+    SELECT * FROM UNNEST(ARRAY['Admin', 'User']) 
     AS new_role(name) 
     ON CONFLICT (name) DO NOTHING;
   `;

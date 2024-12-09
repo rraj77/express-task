@@ -4,10 +4,11 @@ const {
   createUser,
   findUserByUsername,
   getUsers,
+  getUser,
 } = require('../models/userModel');
 
 const register = async (req, res) => {
-  const { firstName, lastName, username, password } = req.body;
+  const { firstName, lastName, username, password, roleId } = req.body;
 
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
@@ -15,7 +16,8 @@ const register = async (req, res) => {
       firstName,
       lastName,
       username,
-      hashedPassword
+      hashedPassword,
+      roleId
     );
 
     const { password, ...rest } = user;
@@ -36,6 +38,7 @@ const login = async (req, res) => {
   const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
     expiresIn: '24h',
   });
+  
   const { password: pass, ...rest } = user;
   res.json({ ...rest, token });
 };
@@ -46,4 +49,10 @@ const getAllUsers = async (req, res) => {
   res.json(users);
 };
 
-module.exports = { register, login, getAllUsers };
+const getUserData = async (req, res) => {
+  const users = await getUser(req.params.id);
+
+  res.json(users);
+};
+
+module.exports = { register, login, getAllUsers, getUserData };

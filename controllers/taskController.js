@@ -8,7 +8,19 @@ const {
 
 const getTasks = async (req, res) => {
   const { userId } = req;
-  
+
+  if (!userId) {
+    return res.status(400).send({
+      message: 'UserId is required',
+    });
+  }
+  const tasks = await findTasksByUserId(userId);
+  return res.json(tasks);
+};
+
+const getTasksByUser = async (req, res) => {
+  const { id: userId } = req.params;
+
   if (!userId) {
     return res.status(400).send({
       message: 'UserId is required',
@@ -47,6 +59,7 @@ module.exports = {
   getTasks,
   getTask,
   createNewTask,
+  getTasksByUser,
   updateExistingTask,
   deleteExistingTask,
 };

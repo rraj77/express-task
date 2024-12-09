@@ -10,6 +10,14 @@ const createTask = async (userId, title, completed) => {
 };
 
 const findTasksByUserId = async (userId) => {
+  const data = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+
+  if (data.rows?.[0]?.roleId === 1) {
+    const result = await pool.query('SELECT * FROM tasks');
+
+    return result.rows;
+  }
+
   const result = await pool.query('SELECT * FROM tasks WHERE "userId" = $1', [
     userId,
   ]);
