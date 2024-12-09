@@ -1,6 +1,12 @@
 const pool = require('../config/db');
 
-const createUser = async (firstName, lastName, username, hashedPassword, roleId) => {
+const createUser = async (
+  firstName,
+  lastName,
+  username,
+  hashedPassword,
+  roleId
+) => {
   const result = await pool.query(
     'INSERT INTO users (firstName, lastName, username, password, "roleId") VALUES ($1, $2, $3, $4, $5) RETURNING *',
     [firstName, lastName, username, hashedPassword, roleId]
@@ -95,4 +101,30 @@ const getUser = async (id) => {
   return result.rows[0];
 };
 
-module.exports = { createUser, findUserByUsername, getUsers, getUser };
+const updateUserDetails = async (id, data) => {
+  const fields = Object.keys(data)
+    .map((key, index) => `"${key}" = $${index + 2}`)
+    .join(', ');
+
+  const values = Object.values(data);
+
+  const result = await pool.query(
+    `
+  UPDATE users
+  SET ${fields}
+  WHERE id = $1
+  RETURNING *;
+  `,
+    [id, ...values]
+  );
+
+  return result.rows[0];
+};
+
+module.exports = {
+  createUser,
+  findUserByUsername,
+  getUsers,
+  getUser,
+  updateUserDetails,
+};

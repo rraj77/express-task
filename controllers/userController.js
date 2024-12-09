@@ -5,6 +5,7 @@ const {
   findUserByUsername,
   getUsers,
   getUser,
+  updateUserDetails,
 } = require('../models/userModel');
 
 const register = async (req, res) => {
@@ -55,4 +56,10 @@ const getUserData = async (req, res) => {
   res.json(users);
 };
 
-module.exports = { register, login, getAllUsers, getUserData };
+const updateUser = async (req, res) => {
+  const users = await updateUserDetails(req.params.id, req.body);
+
+  res.json(users);
+};
+
+module.exports = { register, login, getAllUsers, getUserData, updateUser };
